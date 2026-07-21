@@ -2,6 +2,6 @@ package com.kindora.kindora.entity;
 
 public enum NgoStatus {
     PENDING,
-    APPROVED,
+    VERIFIED,
     REJECTED
 }

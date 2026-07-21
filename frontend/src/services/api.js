@@ -24,6 +24,16 @@ export const donorService = {
 
 export const ngoService = {
     register: (data) => api.post('/ngo/register', data),
+    getPendingDonations: () => api.get('/ngo/donations/pending'),
+    getAcceptedDonations: (ngoId) => api.get(`/ngo/donations/accepted/${ngoId}`),
+    acceptDonation: (donationId, ngoId) => api.post(`/ngo/donations/${donationId}/accept?ngoId=${ngoId}`),
+};
+
+export const adminService = {
+    getDashboardStats: () => api.get('/admin/dashboard'),
+    getPendingNgos: () => api.get('/admin/ngos/pending'),
+    approveNgo: (id) => api.post(`/admin/ngos/${id}/approve`),
+    rejectNgo: (id, reason) => api.post(`/admin/ngos/${id}/reject`, { reason }),
 };
 
 export default api;

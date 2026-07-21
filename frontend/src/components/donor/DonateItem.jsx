@@ -1,0 +1,163 @@
+import React, { useState } from 'react';
+import { donorService } from '../../services/api';
+import { motion } from 'framer-motion';
+import { FaHandHoldingHeart, FaPlus } from 'react-icons/fa';
+
+export default function DonateItem({ user, setActiveTab }) {
+    const [formData, setFormData] = useState({
+        itemName: '',
+        category: 'Select',
+        quantity: '',
+        condition: 'Select',
+        pickupAddress: '',
+        description: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await donorService.createDonation({
+                description: `${formData.itemName} (${formData.quantity}) - ${formData.condition}: ${formData.description}`,
+                category: formData.category,
+                quantity: formData.quantity,
+                pickupAddress: formData.pickupAddress,
+                donorId: user.id
+            });
+            alert('Donation submitted successfully!');
+            setActiveTab('HISTORY');
+        } catch (error) {
+            alert('Failed to submit donation. Please try again.');
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col">
+            <div className="mb-6">
+                <h2 className="text-3xl font-bold text-gray-800">Donate Item</h2>
+                <p className="text-gray-500 mt-1">Share more, care more.</p>
+            </div>
+            
+            <div className="flex flex-col lg:flex-row gap-8 flex-1">
+                {/* Form Section */}
+                <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8 flex-1 max-w-3xl">
+                    <h3 className="font-bold text-gray-800 mb-6 text-lg">Item Details</h3>
+                    
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Item Name</label>
+                                <input 
+                                    type="text" name="itemName" placeholder="Enter item name"
+                                    value={formData.itemName} onChange={handleChange} required
+                                    className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                                <select 
+                                    name="category" value={formData.category} onChange={handleChange}
+                                    className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none bg-white"
+                                >
+                                    <option value="Select">Select</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Clothes">Clothes</option>
+                                    <option value="Books">Books</option>
+                                    <option value="Toys">Toys</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+                                <input 
+                                    type="text" name="quantity" placeholder="Enter quantity"
+                                    value={formData.quantity} onChange={handleChange} required
+                                    className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Condition</label>
+                                <select 
+                                    name="condition" value={formData.condition} onChange={handleChange}
+                                    className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none bg-white"
+                                >
+                                    <option value="Select">Select</option>
+                                    <option value="New">New</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Fair">Fair</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup Location</label>
+                            <input 
+                                type="text" name="pickupAddress" placeholder="Enter location"
+                                value={formData.pickupAddress} onChange={handleChange} required
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                            <input 
+                                type="text" name="description" placeholder="Good quality, well maintained and clean items."
+                                value={formData.description} onChange={handleChange}
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-4">Upload Images</label>
+                            <div className="flex gap-4 overflow-x-auto pb-2">
+                                {/* Dummy Images matching screenshot */}
+                                <div className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop" alt="item1" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=200&h=200&fit=crop" alt="item2" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&h=200&fit=crop" alt="item3" className="w-full h-full object-cover" />
+                                </div>
+                                <button type="button" className="w-24 h-24 rounded-xl bg-purple-100 flex flex-col items-center justify-center text-primary font-medium flex-shrink-0 hover:bg-purple-200 transition-colors">
+                                    <FaPlus className="mb-1" />
+                                    <span className="text-sm">Add</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <button 
+                                type="submit"
+                                className="w-full bg-secondary text-white py-4 rounded-2xl hover:bg-primary transition-colors font-bold text-lg"
+                            >
+                                Submit Donation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {/* Right Side Illustration */}
+                <div className="hidden lg:flex flex-col items-center justify-center w-80 bg-accent rounded-[32px] p-8 text-center">
+                    <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-secondary/10 rounded-full blur-3xl"></div>
+                        <div className="w-32 h-32 bg-secondary rounded-2xl rotate-12 flex items-center justify-center shadow-2xl z-10 relative">
+                            <FaHandHoldingHeart className="text-white text-5xl -rotate-12" />
+                            {/* Decorative Hearts */}
+                            <div className="absolute -top-6 -right-6 text-pink-400 text-2xl -rotate-12">❤</div>
+                            <div className="absolute top-4 -left-8 text-pink-300 text-xl rotate-12">❤</div>
+                            <div className="absolute -bottom-4 right-8 text-purple-300 text-lg rotate-45">❤</div>
+                        </div>
+                    </div>
+                    <p className="text-gray-600 font-medium">Your small donation</p>
+                    <p className="text-gray-600 font-medium">create a big</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">big difference.</p>
+                </div>
+            </div>
+        </motion.div>
+    );
+}

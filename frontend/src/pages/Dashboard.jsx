@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
+import Topbar from '../components/Topbar';
+import DonateItem from '../components/donor/DonateItem';
+import MyDonations from '../components/donor/MyDonations';
+import DonationHistory from '../components/donor/DonationHistory';
+import NgoDetails from '../components/donor/NgoDetails';
+import Profile from '../components/donor/Profile';
+import TrackDonation from '../components/donor/TrackDonation';
+import AvailableDonations from '../components/ngo/AvailableDonations';
+import MyPickups from '../components/ngo/MyPickups';
+import AdminVerification from '../components/admin/AdminVerification';
+import AdminDashboard from '../components/admin/AdminDashboard';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
     const [user, setUser] = useState(null);
+    const [activeTab, setActiveTab] = useState('OVERVIEW');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,53 +28,70 @@ export default function Dashboard() {
         }
     }, [navigate]);
 
+    // Handle setting default tab when user loads, but only once
+    useEffect(() => {
+        if (user && activeTab === 'OVERVIEW' && !window.defaultTabSet) {
+            window.defaultTabSet = true;
+            // Optionally, we can let them stay on OVERVIEW
+        }
+    }, [user, activeTab]);
+
     if (!user) return null;
 
-    return (
-        <div className="flex h-screen bg-accent">
-            <Sidebar role={user.role} />
-            
-            <main className="flex-1 p-8 overflow-y-auto">
-                <header className="flex justify-between items-center mb-10">
-                    <div>
-                        <h2 className="text-3xl font-bold text-gray-800">Welcome back, {user.name}! 👋</h2>
-                        <p className="text-gray-500 mt-1">Here's what's happening on Kindora today.</p>
+    const renderContent = () => {
+        // --- Admin Tabs ---
+        if (activeTab === 'OVERVIEW' && user.role === 'ADMIN') return <AdminDashboard />;
+        if (activeTab === 'NGO_VERIFICATION') return <AdminVerification />;
+        
+        // Placeholders for unimplemented admin modules
+        const unimplementedAdminTabs = ['USERS', 'DONATIONS_MGMT', 'CATEGORIES', 'REPORTS', 'NOTIFICATIONS', 'SETTINGS', 'AUDIT_LOGS'];
+        if (unimplementedAdminTabs.includes(activeTab)) {
+            return (
+                <div className="p-8 flex items-center justify-center h-full">
+                    <div className="text-center text-gray-400">
+                        <h3 className="text-2xl font-bold mb-2">Module Under Construction</h3>
+                        <p>This module ({activeTab}) will be implemented in the next iteration.</p>
                     </div>
-                    <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold shadow-md">
-                            {user.name.charAt(0)}
-                        </div>
-                    </div>
-                </header>
+                </div>
+            );
+        }
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    {/* Stat Cards */}
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                        <h3 className="text-gray-500 text-sm font-medium">Total Donations</h3>
-                        <p className="text-3xl font-bold text-primary mt-2">12</p>
-                    </motion.div>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                        <h3 className="text-gray-500 text-sm font-medium">Accepted</h3>
-                        <p className="text-3xl font-bold text-green-500 mt-2">8</p>
-                    </motion.div>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                        <h3 className="text-gray-500 text-sm font-medium">In Transit</h3>
-                        <p className="text-3xl font-bold text-orange-500 mt-2">3</p>
-                    </motion.div>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center bg-gradient-to-br from-primary to-secondary text-white">
-                        <h3 className="text-white/80 text-sm font-medium">Impact Overview</h3>
-                        <p className="text-2xl font-bold mt-2">15 Lives Touched</p>
-                    </motion.div>
-                </div>
+        // --- Donor Tabs ---
+        if (activeTab === 'DONATE') return <DonateItem user={user} setActiveTab={setActiveTab} />;
+        if (activeTab === 'MY_DONATIONS') return <MyDonations user={user} />;
+        if (activeTab === 'HISTORY') return <DonationHistory user={user} />;
+        if (activeTab === 'TRACK') return <TrackDonation />;
+        if (activeTab === 'NGO_DETAILS') return <NgoDetails />;
+        
+        // --- NGO Tabs ---
+        if (activeTab === 'AVAILABLE') return <AvailableDonations user={user} setActiveTab={setActiveTab} />;
+        if (activeTab === 'MY_PICKUPS') return <MyPickups user={user} />;
+        
+        // --- Shared Tabs ---
+        if (activeTab === 'PROFILE') return <Profile user={user} />;
+        
+        // Fallback OVERVIEW for non-admins
+        return (
+            <div className="p-8">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Overview</h2>
+            </div>
+        );
+    };
+
+    return (
+        <div className="flex h-screen bg-accent font-sans">
+            <Sidebar role={user.role} activeTab={activeTab} setActiveTab={setActiveTab} />
+            
+            <div className="flex-1 flex flex-col h-screen overflow-hidden">
+                <Topbar user={user} />
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">Recent Activity</h3>
-                    <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-                        <p>Dashboard is fully operational and connected!</p>
-                        <p className="text-sm mt-2">We are currently implementing real-time data fetching.</p>
+                <main className="flex-1 overflow-y-auto relative">
+                    {/* Only add padding if it's not the massive admin dashboard which handles its own spacing */}
+                    <div className={activeTab === 'OVERVIEW' && user.role === 'ADMIN' ? 'p-6' : 'p-8'}>
+                        {renderContent()}
                     </div>
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
     );
 }

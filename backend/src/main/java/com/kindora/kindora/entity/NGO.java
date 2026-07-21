@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,13 +21,53 @@ import java.util.List;
 public class NGO {
     @Id
     private String id;
+    
+    @NotBlank(message = "Organization name cannot be empty")
     private String organizationName;
+    
+    @NotBlank(message = "Registration number cannot be empty")
     private String registrationNumber;
-    private String licenseNumber;
-    private String email;
-    private String phone;
+    
+    @NotBlank(message = "Registration type cannot be empty")
+    private String registrationType;
+    
+    private String registrationDate;
+    
+    @NotBlank(message = "Address cannot be empty")
     private String address;
-    private List<String> documents;
+    
+    @NotBlank(message = "City cannot be empty")
+    private String city;
+    
+    @NotBlank(message = "State cannot be empty")
+    private String state;
+    
+    @NotBlank(message = "Pincode cannot be empty")
+    private String pincode;
+    
+    @NotBlank(message = "Authorized person name cannot be empty")
+    private String authorizedPersonName;
+    
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
+    private String email;
+    
+    @NotBlank(message = "Mobile number cannot be empty")
+    private String mobileNumber;
+    
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
+    private String password;
+    
+    private String registrationCertificate;
+    private String panCard;
+    private String addressProof;
+    private String idProof;
+    
+    private String rejectionReason;
+    private String verifiedBy;
+    private LocalDateTime verifiedDate;
+    
     private NgoStatus status;
     private LocalDateTime createdAt;
 }

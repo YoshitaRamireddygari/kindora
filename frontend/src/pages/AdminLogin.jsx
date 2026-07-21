@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaShieldAlt } from 'react-icons/fa';
+import { navState } from '../utils/navigation';
+import { authService } from '../services/api';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    useEffect(() => {
+        if (navState.isFirstLoad) {
+            navigate('/');
+        }
+    }, [navigate]);
+
+    const handleLogin = async (e) => {
         e.preventDefault();
         
         // Hardcoded admin check
@@ -43,11 +51,17 @@ export default function AdminLogin() {
                     <p className="text-gray-500 text-sm">Secure Access Only</p>
                 </div>
                 
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
+                    {/* Hack to trick aggressive browser autofill */}
+                    <input type="email" style={{display: 'none'}} name="fakeemail" />
+                    <input type="password" style={{display: 'none'}} name="fakepassword" />
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Admin Email</label>
                         <input 
                             type="email" 
+                            autoComplete="new-password"
+                            placeholder="Enter admin email"
                             className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -58,6 +72,8 @@ export default function AdminLogin() {
                         <label className="block text-sm font-medium text-gray-700">Password</label>
                         <input 
                             type="password" 
+                            autoComplete="new-password"
+                            placeholder="Enter admin password"
                             className="w-full mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

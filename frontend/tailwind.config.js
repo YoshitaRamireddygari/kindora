@@ -7,9 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#3B1066", // Deep purple from screenshot
-        secondary: "#8A2BE2",
-        accent: "#F6ECFF"
+        primary: '#343193', // Deep blue/purple from sidebar
+        secondary: '#8A2BE2',
+        accent: '#F9FAFB', // Background gray
+        sidebar: '#2D298E', 
+        sidebarHover: '#3D39B5',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
