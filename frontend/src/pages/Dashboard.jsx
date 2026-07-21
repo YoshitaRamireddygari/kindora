@@ -11,6 +11,7 @@ import AvailableDonations from '../components/ngo/AvailableDonations';
 import MyPickups from '../components/ngo/MyPickups';
 import AdminVerification from '../components/admin/AdminVerification';
 import AdminDashboard from '../components/admin/AdminDashboard';
+import DonorDashboard from '../components/donor/DonorDashboard';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -70,10 +71,14 @@ export default function Dashboard() {
         // --- Shared Tabs ---
         if (activeTab === 'PROFILE') return <Profile user={user} />;
         
-        // Fallback OVERVIEW for non-admins
+        // Fallback OVERVIEW for non-admins (Donors/NGOs)
+        if (activeTab === 'OVERVIEW') {
+            return <DonorDashboard user={user} setActiveTab={setActiveTab} />;
+        }
+        
         return (
             <div className="p-8">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800">Overview</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Coming Soon</h2>
             </div>
         );
     };

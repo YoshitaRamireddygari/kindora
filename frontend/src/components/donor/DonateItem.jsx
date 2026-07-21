@@ -112,21 +112,35 @@ export default function DonateItem({ user, setActiveTab }) {
 
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-4">Upload Images</label>
-                            <div className="flex gap-4 overflow-x-auto pb-2">
-                                {/* Dummy Images matching screenshot */}
-                                <div className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&h=200&fit=crop" alt="item1" className="w-full h-full object-cover" />
-                                </div>
-                                <div className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=200&h=200&fit=crop" alt="item2" className="w-full h-full object-cover" />
-                                </div>
-                                <div className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&h=200&fit=crop" alt="item3" className="w-full h-full object-cover" />
-                                </div>
-                                <button type="button" className="w-24 h-24 rounded-xl bg-purple-100 flex flex-col items-center justify-center text-primary font-medium flex-shrink-0 hover:bg-purple-200 transition-colors">
+                            <div className="flex gap-4 overflow-x-auto pb-2 items-center">
+                                {formData.images && formData.images.map((img, idx) => (
+                                    <div key={idx} className="w-24 h-24 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden relative group">
+                                        <img src={URL.createObjectURL(img)} alt={`Upload ${idx}`} className="w-full h-full object-cover" />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setFormData({ ...formData, images: formData.images.filter((_, i) => i !== idx) })}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                                <label className="w-24 h-24 rounded-xl bg-purple-100 flex flex-col items-center justify-center text-primary font-medium flex-shrink-0 hover:bg-purple-200 transition-colors cursor-pointer border-2 border-dashed border-primary/30">
                                     <FaPlus className="mb-1" />
                                     <span className="text-sm">Add</span>
-                                </button>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        multiple 
+                                        className="hidden" 
+                                        onChange={(e) => {
+                                            if (e.target.files) {
+                                                const newFiles = Array.from(e.target.files);
+                                                setFormData({ ...formData, images: [...(formData.images || []), ...newFiles] });
+                                            }
+                                        }} 
+                                    />
+                                </label>
                             </div>
                         </div>
 
