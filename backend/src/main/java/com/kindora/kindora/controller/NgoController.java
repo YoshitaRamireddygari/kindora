@@ -13,6 +13,9 @@ import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
+import com.kindora.kindora.dto.NgoDashboardStats;
 
 @RestController
 @RequestMapping("/ngo")
@@ -51,6 +54,54 @@ public class NgoController {
         return donationRepository.findById(id).map(donation -> {
             donation.setStatus(DonationStatus.ACCEPTED);
             donation.setNgoId(ngoId);
+            return ResponseEntity.ok(donationRepository.save(donation));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/dashboard-stats/{ngoId}")
+    public ResponseEntity<NgoDashboardStats> getDashboardStats(@PathVariable String ngoId) {
+        long totalRequests = donationRepository.findByStatus(DonationStatus.PENDING).size();
+        List<Donation> accepted = donationRepository.findByNgoId(ngoId);
+        long acceptedCount = accepted.stream().filter(d -> d.getStatus() == DonationStatus.ACCEPTED || d.getStatus() == DonationStatus.SCHEDULED || d.getStatus() == DonationStatus.PICKED_UP).count();
+        long itemsReceived = accepted.stream().filter(d -> d.getStatus() == DonationStatus.COMPLETED).count();
+        long beneficiariesHelped = itemsReceived * 5; // Mock metric
+
+        List<Map<String, Object>> mockRecentActivity = Arrays.asList(
+            Map.of("text", "Rice donation request accepted", "time", "2 mins ago", "bg", "bg-purple-100"),
+            Map.of("text", "Blankets donation received", "time", "1 hour ago", "bg", "bg-teal-100")
+        );
+
+        List<Map<String, Object>> mockDonationOverview = Arrays.asList(
+            Map.of("name", "Pending", "value", totalRequests),
+            Map.of("name", "Accepted", "value", acceptedCount),
+            Map.of("name", "Completed", "value", itemsReceived)
+        );
+
+        NgoDashboardStats stats = NgoDashboardStats.builder()
+            .totalRequests(totalRequests)
+            .acceptedDonations(acceptedCount)
+            .itemsReceived(itemsReceived)
+            .beneficiariesHelped(beneficiariesHelped)
+            .recentActivity(mockRecentActivity)
+            .donationOverview(mockDonationOverview)
+            .build();
+
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/inventory/{ngoId}")
+    public ResponseEntity<List<Donation>> getInventory(@PathVariable String ngoId) {
+        // Return completed donations as inventory
+        List<Donation> inventory = donationRepository.findByNgoId(ngoId).stream()
+                .filter(d -> d.getStatus() == DonationStatus.COMPLETED)
+                .toList();
+        return ResponseEntity.ok(inventory);
+    }
+
+    @PostMapping("/donations/{id}/status")
+    public ResponseEntity<Donation> updateDonationStatus(@PathVariable String id, @RequestParam DonationStatus status) {
+        return donationRepository.findById(id).map(donation -> {
+            donation.setStatus(status);
             return ResponseEntity.ok(donationRepository.save(donation));
         }).orElse(ResponseEntity.notFound().build());
     }

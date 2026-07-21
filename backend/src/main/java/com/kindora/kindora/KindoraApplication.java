@@ -24,8 +24,14 @@ public class KindoraApplication {
 				ngo.setEmail("ngo@kindora.com");
 				ngo.setPassword("ngo123");
 				ngo.setOrganizationName("Helping Hands NGO");
-				ngo.setContactNumber("9876543210");
+				ngo.setMobileNumber("9876543210");
 				ngo.setAddress("123 NGO Street");
+				ngo.setCity("Hyderabad");
+				ngo.setState("Telangana");
+				ngo.setPincode("500001");
+				ngo.setRegistrationNumber("REG12345");
+				ngo.setRegistrationType("Trust");
+				ngo.setAuthorizedPersonName("John Doe");
 				ngo.setStatus(NgoStatus.VERIFIED);
 				ngoRepository.save(ngo);
 				System.out.println("Seeded test NGO account: ngo@kindora.com / ngo123");

@@ -7,10 +7,24 @@ import DonationHistory from '../components/donor/DonationHistory';
 import NgoDetails from '../components/donor/NgoDetails';
 import Profile from '../components/donor/Profile';
 import TrackDonation from '../components/donor/TrackDonation';
-import AvailableDonations from '../components/ngo/AvailableDonations';
-import MyPickups from '../components/ngo/MyPickups';
+import NgoDashboard from '../components/ngo/NgoDashboard';
+import DonationRequests from '../components/ngo/DonationRequests';
+import AcceptedDonations from '../components/ngo/AcceptedDonations';
+import PickupSchedule from '../components/ngo/PickupSchedule';
+import Inventory from '../components/ngo/Inventory';
+import Beneficiaries from '../components/ngo/Beneficiaries';
+import NgoProfile from '../components/ngo/NgoProfile';
+import NgoNotifications from '../components/ngo/NgoNotifications';
+import NgoSettings from '../components/ngo/NgoSettings';
 import AdminVerification from '../components/admin/AdminVerification';
 import AdminDashboard from '../components/admin/AdminDashboard';
+import AdminUsers from '../components/admin/AdminUsers';
+import AdminDonations from '../components/admin/AdminDonations';
+import AdminCategories from '../components/admin/AdminCategories';
+import AdminReports from '../components/admin/AdminReports';
+import AdminNotifications from '../components/admin/AdminNotifications';
+import AdminSettings from '../components/admin/AdminSettings';
+import AdminProfile from '../components/admin/AdminProfile';
 import DonorDashboard from '../components/donor/DonorDashboard';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -42,10 +56,17 @@ export default function Dashboard() {
     const renderContent = () => {
         // --- Admin Tabs ---
         if (activeTab === 'OVERVIEW' && user.role === 'ADMIN') return <AdminDashboard />;
-        if (activeTab === 'NGO_VERIFICATION') return <AdminVerification />;
+        if (activeTab === 'USERS' && user.role === 'ADMIN') return <AdminUsers />;
+        if (activeTab === 'NGO_VERIFICATION' && user.role === 'ADMIN') return <AdminVerification />;
+        if (activeTab === 'DONATIONS_MGMT' && user.role === 'ADMIN') return <AdminDonations />;
+        if (activeTab === 'CATEGORIES' && user.role === 'ADMIN') return <AdminCategories />;
+        if (activeTab === 'REPORTS' && user.role === 'ADMIN') return <AdminReports />;
+        if (activeTab === 'NOTIFICATIONS' && user.role === 'ADMIN') return <AdminNotifications />;
+        if (activeTab === 'SETTINGS' && user.role === 'ADMIN') return <AdminSettings />;
+        if (activeTab === 'PROFILE' && user.role === 'ADMIN') return <AdminProfile user={user} />;
         
         // Placeholders for unimplemented admin modules
-        const unimplementedAdminTabs = ['USERS', 'DONATIONS_MGMT', 'CATEGORIES', 'REPORTS', 'NOTIFICATIONS', 'SETTINGS', 'AUDIT_LOGS'];
+        const unimplementedAdminTabs = ['AUDIT_LOGS'];
         if (unimplementedAdminTabs.includes(activeTab)) {
             return (
                 <div className="p-8 flex items-center justify-center h-full">
@@ -65,13 +86,23 @@ export default function Dashboard() {
         if (activeTab === 'NGO_DETAILS') return <NgoDetails />;
         
         // --- NGO Tabs ---
-        if (activeTab === 'AVAILABLE') return <AvailableDonations user={user} setActiveTab={setActiveTab} />;
-        if (activeTab === 'MY_PICKUPS') return <MyPickups user={user} />;
+        if (user.role === 'NGO') {
+            if (activeTab === 'OVERVIEW') return <NgoDashboard user={user} setActiveTab={setActiveTab} />;
+            if (activeTab === 'DONATION_REQUESTS') return <DonationRequests user={user} />;
+            if (activeTab === 'ACCEPTED_DONATIONS') return <AcceptedDonations user={user} />;
+            if (activeTab === 'PICKUP_SCHEDULE') return <PickupSchedule user={user} />;
+            if (activeTab === 'INVENTORY') return <Inventory user={user} />;
+            if (activeTab === 'BENEFICIARIES') return <Beneficiaries />;
+            if (activeTab === 'NGO_PROFILE') return <NgoProfile user={user} />;
+            if (activeTab === 'NOTIFICATIONS') return <NgoNotifications />;
+            if (activeTab === 'NGO_SETTINGS') return <NgoSettings user={user} />;
+            if (activeTab === 'REPORTS') return <AdminReports />;
+        }
         
         // --- Shared Tabs ---
         if (activeTab === 'PROFILE') return <Profile user={user} />;
         
-        // Fallback OVERVIEW for non-admins (Donors/NGOs)
+        // Fallback OVERVIEW for Donors
         if (activeTab === 'OVERVIEW') {
             return <DonorDashboard user={user} setActiveTab={setActiveTab} />;
         }
@@ -88,7 +119,7 @@ export default function Dashboard() {
             <Sidebar role={user.role} activeTab={activeTab} setActiveTab={setActiveTab} />
             
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <Topbar user={user} />
+                <Topbar user={user} setActiveTab={setActiveTab} />
                 
                 <main className="flex-1 overflow-y-auto relative">
                     {/* Only add padding if it's not the massive admin dashboard which handles its own spacing */}

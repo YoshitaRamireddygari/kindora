@@ -55,14 +55,35 @@ export default function Sidebar({ role, activeTab, setActiveTab }) {
                     </>
                 )}
                 {role === 'NGO' && (
-                    <>
-                        <button onClick={() => setActiveTab('AVAILABLE')} className={getBtnClass('AVAILABLE')}>
-                            <FaGift className="text-xl" /> <span>Available Donations</span>
+                    <div className="space-y-1">
+                        <button onClick={() => setActiveTab('DONATION_REQUESTS')} className={getBtnClass('DONATION_REQUESTS')}>
+                            <FaList className="text-lg w-6" /> <span>Donation Requests</span>
                         </button>
-                        <button onClick={() => setActiveTab('MY_PICKUPS')} className={getBtnClass('MY_PICKUPS')}>
-                            <FaHistory className="text-xl" /> <span>My Pickups</span>
+                        <button onClick={() => setActiveTab('ACCEPTED_DONATIONS')} className={getBtnClass('ACCEPTED_DONATIONS')}>
+                            <FaHandHoldingHeart className="text-lg w-6" /> <span>Accepted Donations</span>
                         </button>
-                    </>
+                        <button onClick={() => setActiveTab('PICKUP_SCHEDULE')} className={getBtnClass('PICKUP_SCHEDULE')}>
+                            <FaMapMarkerAlt className="text-lg w-6" /> <span>Pickup Schedule</span>
+                        </button>
+                        <button onClick={() => setActiveTab('INVENTORY')} className={getBtnClass('INVENTORY')}>
+                            <FaBuilding className="text-lg w-6" /> <span>Inventory</span>
+                        </button>
+                        <button onClick={() => setActiveTab('BENEFICIARIES')} className={getBtnClass('BENEFICIARIES')}>
+                            <FaUsers className="text-lg w-6" /> <span>Beneficiaries</span>
+                        </button>
+                        <button onClick={() => setActiveTab('REPORTS')} className={getBtnClass('REPORTS')}>
+                            <FaChartBar className="text-lg w-6" /> <span>Reports</span>
+                        </button>
+                        <button onClick={() => setActiveTab('NOTIFICATIONS')} className={getBtnClass('NOTIFICATIONS')}>
+                            <FaBell className="text-lg w-6" /> <span>Notifications</span>
+                        </button>
+                        <button onClick={() => setActiveTab('NGO_PROFILE')} className={getBtnClass('NGO_PROFILE')}>
+                            <FaUserCircle className="text-lg w-6" /> <span>Profile</span>
+                        </button>
+                        <button onClick={() => setActiveTab('NGO_SETTINGS')} className={getBtnClass('NGO_SETTINGS')}>
+                            <FaCog className="text-lg w-6" /> <span>Settings</span>
+                        </button>
+                    </div>
                 )}
                 {role === 'ADMIN' && (
                     <div className="space-y-1">
@@ -92,7 +113,7 @@ export default function Sidebar({ role, activeTab, setActiveTab }) {
                         </button>
                     </div>
                 )}
-                {role !== 'ADMIN' && (
+                {role !== 'ADMIN' && role !== 'NGO' && (
                     <button onClick={() => setActiveTab('PROFILE')} className={getBtnClass('PROFILE')}>
                         <FaUser className="text-xl" /> <span>Profile</span>
                     </button>

@@ -1,33 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaHandHoldingHeart, FaBoxOpen, FaMedal, FaStar } from 'react-icons/fa';
 import { donorService } from '../../services/api';
 
 export default function DonorDashboard({ user, setActiveTab }) {
-    const [stats, setStats] = useState({ totalDonations: 0, pendingPickups: 0, impactScore: 0 });
+    const [dashboardData, setDashboardData] = useState(null);
 
     useEffect(() => {
+        const userId = user?.id || user?._id;
+        if (!userId) return;
+        
         const fetchStats = async () => {
+            console.log("Fetching stats for user ID:", userId);
             try {
-                const response = await donorService.getHistory(user.id);
-                const donations = response.data || [];
-                const total = donations.length;
-                const pending = donations.filter(d => d.status === 'PENDING' || d.status === 'SCHEDULED').length;
-                
-                setStats({
-                    totalDonations: total,
-                    pendingPickups: pending,
-                    impactScore: total * 50 // Mock calculation
-                });
+                const res = await donorService.getDashboardStats(userId);
+                console.log("Received stats:", res.data);
+                setDashboardData(res.data);
             } catch (error) {
                 console.error("Failed to fetch donor stats", error);
             }
         };
 
-        if (user && user.id) {
-            fetchStats();
-        }
+        fetchStats();
+        const intervalId = setInterval(fetchStats, 5000);
+        return () => clearInterval(intervalId);
     }, [user]);
+
+    const stats = dashboardData || { totalDonations: '...', pendingPickups: '...', acceptedPickups: '...', impactScore: '...' };
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col max-w-6xl mx-auto">
@@ -37,9 +36,9 @@ export default function DonorDashboard({ user, setActiveTab }) {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-center">
-                    <div className="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center text-primary text-2xl mr-6">
+                    <div className="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center text-primary text-2xl mr-4 lg:mr-6">
                         <FaHandHoldingHeart />
                     </div>
                     <div>
@@ -49,7 +48,7 @@ export default function DonorDashboard({ user, setActiveTab }) {
                 </div>
                 
                 <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-center">
-                    <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-500 text-2xl mr-6">
+                    <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-500 text-2xl mr-4 lg:mr-6">
                         <FaBoxOpen />
                     </div>
                     <div>
@@ -59,7 +58,17 @@ export default function DonorDashboard({ user, setActiveTab }) {
                 </div>
 
                 <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-center">
-                    <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center text-green-500 text-2xl mr-6">
+                    <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-500 text-2xl mr-4 lg:mr-6">
+                        <FaBoxOpen />
+                    </div>
+                    <div>
+                        <p className="text-gray-500 text-sm font-semibold mb-1">Accepted Pickups</p>
+                        <h3 className="text-3xl font-bold text-gray-800">{stats.acceptedPickups}</h3>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-center">
+                    <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center text-green-500 text-2xl mr-4 lg:mr-6">
                         <FaStar />
                     </div>
                     <div>

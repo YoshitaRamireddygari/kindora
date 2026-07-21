@@ -78,4 +78,37 @@ public class AuthController {
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+        
+        Optional<NGO> ngoOptional = ngoRepository.findByEmail(email);
+        if (ngoOptional.isPresent()) {
+            NGO ngo = ngoOptional.get();
+            if (ngo.getPassword().equals(oldPassword)) {
+                ngo.setPassword(newPassword);
+                ngoRepository.save(ngo);
+                return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("error", "Incorrect old password"));
+            }
+        }
+        
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getPassword().equals(oldPassword)) {
+                user.setPassword(newPassword);
+                userRepository.save(user);
+                return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("error", "Incorrect old password"));
+            }
+        }
+        
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
+    }
 }

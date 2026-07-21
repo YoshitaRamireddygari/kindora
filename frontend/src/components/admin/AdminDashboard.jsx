@@ -20,6 +20,8 @@ export default function AdminDashboard() {
             }
         };
         fetchStats();
+        const intervalId = setInterval(fetchStats, 5000);
+        return () => clearInterval(intervalId);
     }, []);
 
     if (loading || !stats) return <div className="p-8">Loading dashboard...</div>;
@@ -187,7 +189,7 @@ export default function AdminDashboard() {
                         <button className="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">View All</button>
                     </div>
                     <div className="space-y-4">
-                        {stats.recentDonations.length === 0 ? (
+                        {(!stats.recentDonations?.length) ? (
                             <p className="text-gray-500 text-sm">No recent donations.</p>
                         ) : stats.recentDonations.map((donation, i) => (
                             <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
@@ -222,7 +224,7 @@ export default function AdminDashboard() {
                         <button className="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">View All</button>
                     </div>
                     <div className="space-y-4">
-                        {stats.recentUsers.length === 0 ? (
+                        {(!stats.recentUsers?.length) ? (
                             <p className="text-gray-500 text-sm">No recent users.</p>
                         ) : stats.recentUsers.map((u, i) => (
                             <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
