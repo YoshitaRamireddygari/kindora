@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { authService } from '../../services/api';
+import { authService, ngoService } from '../../services/api';
 
 export default function NgoSettings({ user }) {
     const [activeTab, setActiveTab] = useState('Profile Settings');
@@ -9,6 +9,46 @@ export default function NgoSettings({ user }) {
     const [showNew, setShowNew] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    
+    const [profileData, setProfileData] = useState({
+        organizationName: user?.name || "Helping Hands NGO",
+        contactPerson: user?.authorizedPersonName || "Admin",
+        phone: user?.mobileNumber || "+91 91234 56789",
+        address: user?.address || "Hyderabad, Telangana, India"
+    });
+    const [loading, setLoading] = useState(false);
+
+    const handleProfileUpdate = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await ngoService.updateProfile(user.id, {
+                organizationName: profileData.organizationName,
+                authorizedPersonName: profileData.contactPerson,
+                mobileNumber: profileData.phone,
+                address: profileData.address
+            });
+            
+            // Update local storage so the rest of the app sees the changes
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const updatedUser = { 
+                ...currentUser, 
+                name: profileData.organizationName,
+                authorizedPersonName: profileData.contactPerson,
+                mobileNumber: profileData.phone,
+                address: profileData.address
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            alert("Profile updated successfully!");
+            window.location.reload();
+        } catch (error) {
+            console.error("Failed to update profile", error);
+            alert("Failed to update profile.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handlePasswordUpdate = async () => {
         if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
@@ -68,20 +108,31 @@ export default function NgoSettings({ user }) {
                 <div className="flex-1 bg-white rounded-3xl p-10 shadow-sm border border-gray-100">
                     {activeTab === 'Profile Settings' && (
                         <div>
-                            <form className="space-y-6 max-w-lg">
+                            <form className="space-y-6 max-w-lg" onSubmit={handleProfileUpdate}>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-800 mb-2">First Name</label>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">Organization Name</label>
                                     <input 
                                         type="text" 
-                                        defaultValue={user?.name || "Helping Hands NGO"}
+                                        value={profileData.organizationName}
+                                        onChange={(e) => setProfileData({...profileData, organizationName: e.target.value})}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-800 mb-2">Email</label>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">Email (Read-only)</label>
                                     <input 
                                         type="email" 
-                                        defaultValue={user?.email || "contact@helpinghands.org"}
+                                        value={user?.email || "contact@helpinghands.org"}
+                                        readOnly
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none text-gray-500 font-medium cursor-not-allowed"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">Contact Person</label>
+                                    <input 
+                                        type="text" 
+                                        value={profileData.contactPerson}
+                                        onChange={(e) => setProfileData({...profileData, contactPerson: e.target.value})}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium"
                                     />
                                 </div>
@@ -89,7 +140,8 @@ export default function NgoSettings({ user }) {
                                     <label className="block text-sm font-bold text-gray-800 mb-2">Phone</label>
                                     <input 
                                         type="text" 
-                                        defaultValue="+91 91234 56789"
+                                        value={profileData.phone}
+                                        onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium"
                                     />
                                 </div>
@@ -97,20 +149,15 @@ export default function NgoSettings({ user }) {
                                     <label className="block text-sm font-bold text-gray-800 mb-2">Address</label>
                                     <input 
                                         type="text" 
-                                        defaultValue="Hyderabad, Telangana, India"
+                                        value={profileData.address}
+                                        onChange={(e) => setProfileData({...profileData, address: e.target.value})}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-800 mb-2">Timezone</label>
-                                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium appearance-none bg-white">
-                                        <option>( GMT+05:30 ) Asia/Kolkata</option>
-                                    </select>
-                                </div>
                                 
                                 <div className="pt-4">
-                                    <button type="button" className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-secondary transition-colors">
-                                        Save Changes
+                                    <button type="submit" disabled={loading} className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-secondary transition-colors disabled:opacity-50">
+                                        {loading ? 'Saving...' : 'Save Changes'}
                                     </button>
                                 </div>
                             </form>

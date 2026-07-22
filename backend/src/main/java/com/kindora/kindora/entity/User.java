@@ -40,4 +40,14 @@ public class User {
     
     private Role role;
     private LocalDateTime createdAt;
+    
+    private Double latitude;
+    private Double longitude;
+    
+    private String fullAddress;
+    private String city;
+    private String district;
+    private String state;
+    private String country;
+    private String pincode;
 }

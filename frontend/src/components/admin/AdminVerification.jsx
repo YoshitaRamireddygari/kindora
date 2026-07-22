@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { adminService } from '../../services/api';
 import { motion } from 'framer-motion';
 import { FaCheck, FaTimes, FaFileAlt, FaEye } from 'react-icons/fa';
+import MapLocation from '../common/MapLocation';
 
 export default function AdminVerification() {
     const [ngos, setNgos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [rejectingId, setRejectingId] = useState(null);
     const [rejectReason, setRejectReason] = useState('');
+    const [viewingNgo, setViewingNgo] = useState(null);
 
     useEffect(() => {
         fetchPendingNgos();
@@ -92,7 +94,9 @@ export default function AdminVerification() {
                                             {ngo.registrationNumber}
                                         </td>
                                         <td className="p-4">
-                                            <button className="flex items-center space-x-2 text-primary font-medium hover:underline bg-primary/5 px-3 py-1.5 rounded-lg">
+                                            <button 
+                                                onClick={() => setViewingNgo(ngo)}
+                                                className="flex items-center space-x-2 text-primary font-medium hover:underline bg-primary/5 px-3 py-1.5 rounded-lg">
                                                 <FaEye /> <span>View Files</span>
                                             </button>
                                         </td>
@@ -138,6 +142,104 @@ export default function AdminVerification() {
                     </div>
                 )}
             </div>
+
+            {viewingNgo && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-4">NGO Documents & Location</h3>
+                        <p className="text-gray-500 mb-6">Uploaded by {viewingNgo.organizationName}</p>
+                        
+                        <div className="mb-6">
+                            <MapLocation 
+                                latitude={viewingNgo.latitude}
+                                longitude={viewingNgo.longitude}
+                                address={`${viewingNgo.address}, ${viewingNgo.city}, ${viewingNgo.state} - ${viewingNgo.pincode}`}
+                                title="Registered Address"
+                                height="200px"
+                                isAdmin={true}
+                            />
+                        </div>
+
+                        <div className="space-y-4">
+                            {viewingNgo.registrationCertificate ? (
+                                <a href={viewingNgo.registrationCertificate} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-blue-500 text-xl" />
+                                        <span className="font-medium text-gray-700">Registration Certificate</span>
+                                    </div>
+                                    <FaEye className="text-gray-400" />
+                                </a>
+                            ) : (
+                                <div className="flex items-center justify-between p-4 border border-gray-100 bg-gray-50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-gray-400 text-xl" />
+                                        <span className="font-medium text-gray-400">Registration Certificate (Not uploaded)</span>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {viewingNgo.panCard ? (
+                                <a href={viewingNgo.panCard} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-blue-500 text-xl" />
+                                        <span className="font-medium text-gray-700">PAN Card</span>
+                                    </div>
+                                    <FaEye className="text-gray-400" />
+                                </a>
+                            ) : (
+                                <div className="flex items-center justify-between p-4 border border-gray-100 bg-gray-50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-gray-400 text-xl" />
+                                        <span className="font-medium text-gray-400">PAN Card (Not uploaded)</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {viewingNgo.addressProof ? (
+                                <a href={viewingNgo.addressProof} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-blue-500 text-xl" />
+                                        <span className="font-medium text-gray-700">Address Proof</span>
+                                    </div>
+                                    <FaEye className="text-gray-400" />
+                                </a>
+                            ) : (
+                                <div className="flex items-center justify-between p-4 border border-gray-100 bg-gray-50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-gray-400 text-xl" />
+                                        <span className="font-medium text-gray-400">Address Proof (Not uploaded)</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {viewingNgo.idProof ? (
+                                <a href={viewingNgo.idProof} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-blue-500 text-xl" />
+                                        <span className="font-medium text-gray-700">ID Proof</span>
+                                    </div>
+                                    <FaEye className="text-gray-400" />
+                                </a>
+                            ) : (
+                                <div className="flex items-center justify-between p-4 border border-gray-100 bg-gray-50 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <FaFileAlt className="text-gray-400 text-xl" />
+                                        <span className="font-medium text-gray-400">ID Proof (Not uploaded)</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-8 flex justify-end">
+                            <button 
+                                onClick={() => setViewingNgo(null)}
+                                className="px-6 py-2 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </motion.div>
     );
 }

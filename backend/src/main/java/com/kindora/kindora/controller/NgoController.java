@@ -24,6 +24,7 @@ public class NgoController {
 
     private final NgoRepository ngoRepository;
     private final DonationRepository donationRepository;
+    private final com.kindora.kindora.repository.DonationProofRepository donationProofRepository;
 
     @PostMapping("/register")
     public ResponseEntity<NGO> register(@Valid @RequestBody NGO ngo) {
@@ -37,6 +38,17 @@ public class NgoController {
         return ngoRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<NGO> updateProfile(@PathVariable String id, @RequestBody NGO updatedNgo) {
+        return ngoRepository.findById(id).map(ngo -> {
+            ngo.setOrganizationName(updatedNgo.getOrganizationName());
+            ngo.setAuthorizedPersonName(updatedNgo.getAuthorizedPersonName());
+            ngo.setMobileNumber(updatedNgo.getMobileNumber());
+            ngo.setAddress(updatedNgo.getAddress());
+            return ResponseEntity.ok(ngoRepository.save(ngo));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/donations/pending")
@@ -103,6 +115,37 @@ public class NgoController {
         return donationRepository.findById(id).map(donation -> {
             donation.setStatus(status);
             return ResponseEntity.ok(donationRepository.save(donation));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/donations/{id}/schedule")
+    public ResponseEntity<Donation> schedulePickup(@PathVariable String id, @RequestParam String date) {
+        return donationRepository.findById(id).map(donation -> {
+            try {
+                donation.setPickupDate(java.time.LocalDate.parse(date));
+                donation.setStatus(DonationStatus.SCHEDULED);
+                return ResponseEntity.ok(donationRepository.save(donation));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().<Donation>build();
+            }
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/donations/{id}/upload-proof")
+    public ResponseEntity<com.kindora.kindora.entity.DonationProof> uploadProof(
+            @PathVariable String id, 
+            @RequestBody com.kindora.kindora.entity.DonationProof proof) {
+        
+        return donationRepository.findById(id).map(donation -> {
+            proof.setDonationId(id);
+            proof.setNgoId(donation.getNgoId());
+            proof.setStatus(com.kindora.kindora.entity.ProofStatus.PENDING);
+            proof.setUploadedAt(LocalDateTime.now());
+            
+            donation.setStatus(DonationStatus.DISTRIBUTION_PROOF_PENDING);
+            donationRepository.save(donation);
+            
+            return ResponseEntity.ok(donationProofRepository.save(proof));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

@@ -5,6 +5,8 @@ import { ngoService } from '../../services/api';
 
 export default function PickupSchedule({ user }) {
     const [pickups, setPickups] = useState([]);
+    const [scheduleDate, setScheduleDate] = useState('');
+    const [schedulingId, setSchedulingId] = useState(null);
 
     useEffect(() => {
         if (!user || !user.id) return;
@@ -31,6 +33,23 @@ export default function PickupSchedule({ user }) {
             setPickups(pickups.filter(p => p.id !== id));
         } catch (err) {
             console.error("Failed to mark picked up", err);
+        }
+    };
+
+    const handleSchedule = async (id) => {
+        if (!scheduleDate) {
+            alert('Please select a date.');
+            return;
+        }
+        try {
+            await ngoService.schedulePickup(id, scheduleDate);
+            setPickups(pickups.map(p => p.id === id ? { ...p, status: 'SCHEDULED', pickupDate: scheduleDate } : p));
+            setSchedulingId(null);
+            setScheduleDate('');
+            alert('Pickup scheduled successfully!');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to schedule pickup');
         }
     };
 
@@ -115,13 +134,35 @@ export default function PickupSchedule({ user }) {
                                         </span>
                                     </td>
                                     <td className="py-4 px-4">
-                                        <div className="flex gap-2 justify-end">
-                                            <button className="p-2 text-gray-400 hover:text-primary transition-colors bg-gray-50 hover:bg-primary/10 rounded-lg">
+                                        <div className="flex gap-2 justify-end items-center">
+                                            <button className="p-2 text-gray-400 hover:text-primary transition-colors bg-gray-50 hover:bg-primary/10 rounded-lg h-fit">
                                                 <FaEye />
                                             </button>
-                                            <button onClick={() => handleMarkPickedUp(pickup.id)} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-secondary transition-colors">
-                                                Mark Picked Up
-                                            </button>
+                                            
+                                            {pickup.status === 'ACCEPTED' ? (
+                                                schedulingId === pickup.id ? (
+                                                    <div className="flex flex-col gap-2">
+                                                        <input 
+                                                            type="date" 
+                                                            value={scheduleDate} 
+                                                            onChange={(e) => setScheduleDate(e.target.value)} 
+                                                            className="text-sm border border-gray-200 p-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                                                        />
+                                                        <div className="flex gap-1 justify-end">
+                                                            <button onClick={() => setSchedulingId(null)} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-200">Cancel</button>
+                                                            <button onClick={() => handleSchedule(pickup.id)} className="px-2 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:bg-secondary">Save</button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={() => { setSchedulingId(pickup.id); setScheduleDate(''); }} className="px-4 py-2 bg-purple-50 text-purple-600 text-sm font-bold rounded-lg hover:bg-purple-100 transition-colors">
+                                                        Schedule Date
+                                                    </button>
+                                                )
+                                            ) : (
+                                                <button onClick={() => handleMarkPickedUp(pickup.id)} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-secondary transition-colors whitespace-nowrap">
+                                                    Mark Picked Up
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

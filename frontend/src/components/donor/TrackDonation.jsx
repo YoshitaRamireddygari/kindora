@@ -22,7 +22,8 @@ export default function TrackDonation() {
                 status: data.status || 'PENDING',
                 item: data.description || data.category || 'Donation Item',
                 ngo: data.ngoId ? `NGO ID: ${data.ngoId}` : 'Pending NGO Assignment',
-                pickupDate: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A'
+                createdDate: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A',
+                scheduledDate: data.pickupDate ? new Date(data.pickupDate).toLocaleDateString() : null
             });
         } catch (err) {
             console.error("Tracking error", err);
@@ -37,8 +38,14 @@ export default function TrackDonation() {
         switch (status) {
             case 'PENDING': return 1;
             case 'ACCEPTED': return 2;
-            case 'SCHEDULED': return 3;
+            case 'SCHEDULED': 
+            case 'PICKED_UP':
+            case 'IN_TRANSIT':
+            case 'DELIVERED_TO_NGO':
+            case 'DISTRIBUTION_PROOF_PENDING':
+                return 3;
             case 'COMPLETED': return 4;
+            case 'CANCELLED': return 0;
             default: return 0;
         }
     };
@@ -132,6 +139,13 @@ export default function TrackDonation() {
                                 <p className="text-sm text-gray-500 font-medium">Assigned To</p>
                                 <p className="font-medium text-gray-900 mt-1">{trackingResult.ngo}</p>
                             </div>
+                            {trackingResult.scheduledDate && (
+                                <div className="col-span-2 bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                    <p className="text-sm text-purple-600 font-bold flex items-center gap-2">
+                                        <FaTruck /> Pickup Scheduled For: {trackingResult.scheduledDate}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </motion.div>

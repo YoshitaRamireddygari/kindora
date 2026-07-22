@@ -21,7 +21,10 @@ export default function AdminReports() {
                     <h2 className="text-3xl font-bold text-gray-800">Analytics & Reports</h2>
                     <p className="text-gray-500 mt-1">Detailed view of platform metrics.</p>
                 </div>
-                <button className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-secondary transition-colors shadow-md">
+                <button 
+                    onClick={() => window.print()}
+                    className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-secondary transition-colors shadow-md"
+                >
                     <FaDownload /> Export PDF
                 </button>
             </div>

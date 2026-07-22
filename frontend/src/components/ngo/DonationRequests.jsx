@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch, FaEye, FaCheck, FaFilter, FaBox, FaTshirt, FaBook, FaBed, FaGamepad } from 'react-icons/fa';
+import { FaSearch, FaEye, FaCheck, FaFilter, FaBox, FaTshirt, FaBook, FaBed, FaGamepad, FaEllipsisV, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { ngoService } from '../../services/api';
+import MapLocation from '../common/MapLocation';
 
 export default function DonationRequests({ user }) {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('All Categories');
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [expandedRow, setExpandedRow] = useState(null);
+
+    const toggleMenu = (id) => {
+        if (activeMenu === id) {
+            setActiveMenu(null);
+        } else {
+            setActiveMenu(id);
+        }
+    };
 
     useEffect(() => {
         const fetchRequests = async () => {
@@ -32,6 +44,19 @@ export default function DonationRequests({ user }) {
         } catch (error) {
             alert('Failed to accept donation.');
         }
+    };
+
+    const handleEdit = (id) => {
+        alert('Edit functionality for donation requests will be implemented in the next iteration.');
+        setActiveMenu(null);
+    };
+
+    const handleCancel = (id) => {
+        if (window.confirm('Are you sure you want to decline/cancel this donation request?')) {
+            setRequests(requests.filter(r => r.id !== id));
+            alert('Donation request cancelled.');
+        }
+        setActiveMenu(null);
     };
 
     const getCategoryIcon = (category) => {
@@ -65,11 +90,21 @@ export default function DonationRequests({ user }) {
                         />
                     </div>
                     <div className="flex gap-4">
-                        <select className="bg-gray-50 border border-gray-100 text-gray-700 py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-medium appearance-none">
-                            <option>All Categories</option>
+                        <select 
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="bg-gray-50 border border-gray-100 text-gray-700 py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-medium appearance-none"
+                        >
+                            <option value="All Categories">All Categories</option>
+                            <option value="food">Food & Rice</option>
+                            <option value="clothing">Clothes & Clothing</option>
+                            <option value="education">Books & Education</option>
+                            <option value="toys">Toys & Kids</option>
+                            <option value="blankets">Blankets</option>
                         </select>
                         <select className="bg-gray-50 border border-gray-100 text-gray-700 py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-medium appearance-none">
                             <option>All Status</option>
+                            <option>Pending</option>
                         </select>
                         <button className="bg-primary text-white py-3 px-6 rounded-xl font-medium hover:bg-secondary transition-colors flex items-center gap-2">
                             <FaFilter /> Filter
@@ -97,18 +132,30 @@ export default function DonationRequests({ user }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {requests.filter(req => 
-                                    (req.category || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                    (req.id || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                ).map((req) => (
-                                    <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                {requests.filter(req => {
+                                    const matchesSearch = (req.category || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                                          (req.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+                                    
+                                    if (filterCategory === 'All Categories') return matchesSearch;
+                                    
+                                    const cat = (req.category || '').toLowerCase();
+                                    if (filterCategory === 'food') return matchesSearch && (cat === 'food' || cat === 'rice');
+                                    if (filterCategory === 'clothing') return matchesSearch && (cat === 'clothes' || cat === 'clothing');
+                                    if (filterCategory === 'education') return matchesSearch && (cat === 'books' || cat === 'education');
+                                    if (filterCategory === 'toys') return matchesSearch && (cat === 'toys' || cat === 'kids');
+                                    if (filterCategory === 'blankets') return matchesSearch && (cat === 'blankets');
+                                    
+                                    return matchesSearch;
+                                }).map((req) => (
+                                    <React.Fragment key={req.id}>
+                                    <tr className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                         <td className="py-4 px-4">
                                             <div className="flex items-center gap-3">
                                                 {getCategoryIcon(req.category)}
                                                 <span className="font-bold text-gray-900">{req.category}</span>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-4 text-gray-600 font-medium">Unknown Donor</td>
+                                        <td className="py-4 px-4 text-gray-600 font-medium">{req.donorName || 'Unknown Donor'}</td>
                                         <td className="py-4 px-4 text-gray-600 font-medium">{req.category}</td>
                                         <td className="py-4 px-4 text-gray-600 font-medium">{req.quantity}</td>
                                         <td className="py-4 px-4 text-gray-600 font-medium">{new Date(req.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
@@ -117,17 +164,43 @@ export default function DonationRequests({ user }) {
                                                 Pending
                                             </span>
                                         </td>
-                                        <td className="py-4 px-4 text-center">
+                                        <td className="py-4 px-4 text-center relative">
                                             <div className="flex justify-center gap-2">
-                                                <button className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors">
-                                                    <FaEye size={14} />
+                                                <button 
+                                                    onClick={() => setExpandedRow(expandedRow === req.id ? null : req.id)}
+                                                    className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                                >
+                                                    {expandedRow === req.id ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
                                                 </button>
                                                 <button onClick={() => handleAccept(req.id)} className="w-8 h-8 rounded-full bg-green-50 text-green-500 border border-green-200 flex items-center justify-center hover:bg-green-100 transition-colors">
                                                     <FaCheck size={14} />
                                                 </button>
+                                                <button onClick={() => toggleMenu(req.id)} className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                                                    <FaEllipsisV size={14} />
+                                                </button>
                                             </div>
+                                            {activeMenu === req.id && (
+                                                <div className="absolute right-8 top-10 w-32 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-10 text-left">
+                                                    <button onClick={() => handleEdit(req.id)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors">Edit</button>
+                                                    <button onClick={() => handleCancel(req.id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">Cancel</button>
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
+                                    {expandedRow === req.id && (
+                                        <tr className="bg-gray-50/50 border-b border-gray-100">
+                                            <td colSpan="7" className="p-6">
+                                                <MapLocation 
+                                                    latitude={req.pickupLatitude}
+                                                    longitude={req.pickupLongitude}
+                                                    address={req.pickupAddress}
+                                                    title="Pickup Location"
+                                                    height="200px"
+                                                />
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
                                 ))}
                             </tbody>
                         </table>

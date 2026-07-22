@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { adminService } from '../../services/api';
 import { motion } from 'framer-motion';
-import { FaTrash, FaUserShield } from 'react-icons/fa';
+import { FaTrash, FaUserShield, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import MapLocation from '../common/MapLocation';
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedRow, setExpandedRow] = useState(null);
 
     useEffect(() => {
         fetchUsers();
@@ -59,7 +61,8 @@ export default function AdminUsers() {
                         </thead>
                         <tbody>
                             {users.map((user) => (
-                                <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                <React.Fragment key={user.id}>
+                                <tr className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                     <td className="p-4 pl-6 font-medium text-gray-800 flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
                                             {user.name?.charAt(0).toUpperCase() || <FaUserShield />}
@@ -82,15 +85,39 @@ export default function AdminUsers() {
                                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                     </td>
                                     <td className="p-4 pr-6 text-right">
-                                        <button 
-                                            onClick={() => handleDelete(user.id)}
-                                            className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Delete User"
-                                        >
-                                            <FaTrash />
-                                        </button>
+                                        <div className="flex justify-end gap-2">
+                                            <button 
+                                                onClick={() => setExpandedRow(expandedRow === user.id ? null : user.id)}
+                                                className="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                                title="View Location"
+                                            >
+                                                {expandedRow === user.id ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete(user.id)}
+                                                className="w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors"
+                                                title="Delete User"
+                                            >
+                                                <FaTrash size={14} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
+                                {expandedRow === user.id && (
+                                    <tr className="bg-gray-50/50 border-b border-gray-100">
+                                        <td colSpan="6" className="p-6">
+                                            <MapLocation 
+                                                latitude={user.latitude}
+                                                longitude={user.longitude}
+                                                address={user.address}
+                                                title="User Registered Location"
+                                                height="200px"
+                                                isAdmin={true}
+                                            />
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
                             ))}
                             {users.length === 0 && (
                                 <tr>

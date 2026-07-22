@@ -60,6 +60,9 @@ public class AuthController {
             userData.put("name", ngo.getOrganizationName());
             userData.put("email", ngo.getEmail());
             userData.put("role", "NGO");
+            userData.put("authorizedPersonName", ngo.getAuthorizedPersonName());
+            userData.put("mobileNumber", ngo.getMobileNumber());
+            userData.put("address", ngo.getAddress());
             
             response.put("token", token);
             response.put("user", userData);

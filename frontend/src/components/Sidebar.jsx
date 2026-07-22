@@ -96,6 +96,9 @@ export default function Sidebar({ role, activeTab, setActiveTab }) {
                         <button onClick={() => setActiveTab('DONATIONS_MGMT')} className={getBtnClass('DONATIONS_MGMT')}>
                             <FaGift className="text-lg w-6" /> <span>Donations</span>
                         </button>
+                        <button onClick={() => setActiveTab('PROOFS')} className={getBtnClass('PROOFS')}>
+                            <FaHandHoldingHeart className="text-lg w-6" /> <span>Donation Proofs ⭐</span>
+                        </button>
                         <button onClick={() => setActiveTab('CATEGORIES')} className={getBtnClass('CATEGORIES')}>
                             <FaList className="text-lg w-6" /> <span>Categories</span>
                         </button>

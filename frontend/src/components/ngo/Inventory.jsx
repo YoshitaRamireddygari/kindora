@@ -5,6 +5,8 @@ import { ngoService } from '../../services/api';
 
 export default function Inventory({ user }) {
     const [inventoryItems, setInventoryItems] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('All Categories');
 
     useEffect(() => {
         if (!user || !user.id) return;
@@ -49,17 +51,32 @@ export default function Inventory({ user }) {
                         <input 
                             type="text" 
                             placeholder="Search items..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-gray-50 text-gray-700 pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all border border-gray-100"
                         />
                     </div>
                     <div className="flex gap-4">
-                        <select className="bg-gray-50 border border-gray-100 text-gray-700 py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-medium appearance-none">
-                            <option>All Categories</option>
+                        <select 
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="bg-gray-50 border border-gray-100 text-gray-700 py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-medium appearance-none"
+                        >
+                            <option value="All Categories">All Categories</option>
+                            <option value="food">Food & Rice</option>
+                            <option value="clothing">Clothes & Clothing</option>
+                            <option value="education">Books & Education</option>
+                            <option value="toys">Toys & Kids</option>
+                            <option value="blankets">Blankets</option>
                         </select>
                         <select className="bg-gray-50 border border-gray-100 text-gray-700 py-3 px-6 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-medium appearance-none">
                             <option>All Status</option>
+                            <option>Good</option>
                         </select>
-                        <button className="bg-primary text-white py-3 px-6 rounded-xl font-medium hover:bg-secondary transition-colors flex items-center gap-2">
+                        <button 
+                            onClick={() => window.print()}
+                            className="bg-primary text-white py-3 px-6 rounded-xl font-medium hover:bg-secondary transition-colors flex items-center gap-2"
+                        >
                             <FaDownload /> Export
                         </button>
                     </div>
@@ -91,20 +108,34 @@ export default function Inventory({ user }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {inventoryItems.map((item) => (
+                            {inventoryItems.filter(item => {
+                                const matchesSearch = (item.category || '').toLowerCase().includes(searchTerm.toLowerCase());
+                                if (filterCategory === 'All Categories') return matchesSearch;
+                                const cat = (item.category || '').toLowerCase();
+                                if (filterCategory === 'food') return matchesSearch && (cat === 'food' || cat === 'rice');
+                                if (filterCategory === 'clothing') return matchesSearch && (cat === 'clothes' || cat === 'clothing');
+                                if (filterCategory === 'education') return matchesSearch && (cat === 'books' || cat === 'education');
+                                if (filterCategory === 'toys') return matchesSearch && (cat === 'toys' || cat === 'kids');
+                                if (filterCategory === 'blankets') return matchesSearch && (cat === 'blankets');
+                                return matchesSearch;
+                            }).map((item) => (
                                 <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                     <td className="py-4 px-4 font-bold text-gray-900">{item.category}</td>
                                     <td className="py-4 px-4 text-gray-600 font-medium">{item.category}</td>
                                     <td className="py-4 px-4 text-gray-600 font-medium">{item.quantity}</td>
                                     <td className="py-4 px-4 text-gray-600 font-medium">{new Date(item.createdAt).toLocaleDateString('en-GB')}</td>
-                                    <td className="py-4 px-4 text-gray-600 font-medium">Unknown Donor</td>
+                                    <td className="py-4 px-4 text-gray-600 font-medium">{item.donorName || 'Unknown Donor'}</td>
                                     <td className="py-4 px-4">
                                         <span className="px-4 py-1.5 rounded-full text-xs font-bold border bg-green-50 text-green-500 border-green-100">
                                             Good
                                         </span>
                                     </td>
                                     <td className="py-4 px-4 text-center">
-                                        <button className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors mx-auto">
+                                        <button 
+                                            onClick={() => alert(`Item Details:\n\nID: ${item.id}\nCategory: ${item.category}\nQuantity: ${item.quantity}\nReceived On: ${new Date(item.createdAt).toLocaleDateString('en-GB')}\nDonor: ${item.donorName || 'Unknown'}\nDescription: ${item.description || 'N/A'}\nStatus: ${item.status}`)}
+                                            className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition-colors mx-auto"
+                                            title="View Details"
+                                        >
                                             <FaEye size={14} />
                                         </button>
                                     </td>

@@ -20,6 +20,7 @@ import AdminVerification from '../components/admin/AdminVerification';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import AdminUsers from '../components/admin/AdminUsers';
 import AdminDonations from '../components/admin/AdminDonations';
+import AdminProofs from '../components/admin/AdminProofs';
 import AdminCategories from '../components/admin/AdminCategories';
 import AdminReports from '../components/admin/AdminReports';
 import AdminNotifications from '../components/admin/AdminNotifications';
@@ -55,10 +56,11 @@ export default function Dashboard() {
 
     const renderContent = () => {
         // --- Admin Tabs ---
-        if (activeTab === 'OVERVIEW' && user.role === 'ADMIN') return <AdminDashboard />;
+        if (activeTab === 'OVERVIEW' && user.role === 'ADMIN') return <AdminDashboard setActiveTab={setActiveTab} />;
         if (activeTab === 'USERS' && user.role === 'ADMIN') return <AdminUsers />;
         if (activeTab === 'NGO_VERIFICATION' && user.role === 'ADMIN') return <AdminVerification />;
         if (activeTab === 'DONATIONS_MGMT' && user.role === 'ADMIN') return <AdminDonations />;
+        if (activeTab === 'PROOFS' && user.role === 'ADMIN') return <AdminProofs />;
         if (activeTab === 'CATEGORIES' && user.role === 'ADMIN') return <AdminCategories />;
         if (activeTab === 'REPORTS' && user.role === 'ADMIN') return <AdminReports />;
         if (activeTab === 'NOTIFICATIONS' && user.role === 'ADMIN') return <AdminNotifications />;
@@ -93,7 +95,7 @@ export default function Dashboard() {
             if (activeTab === 'PICKUP_SCHEDULE') return <PickupSchedule user={user} />;
             if (activeTab === 'INVENTORY') return <Inventory user={user} />;
             if (activeTab === 'BENEFICIARIES') return <Beneficiaries />;
-            if (activeTab === 'NGO_PROFILE') return <NgoProfile user={user} />;
+            if (activeTab === 'NGO_PROFILE') return <NgoProfile user={user} setActiveTab={setActiveTab} />;
             if (activeTab === 'NOTIFICATIONS') return <NgoNotifications />;
             if (activeTab === 'NGO_SETTINGS') return <NgoSettings user={user} />;
             if (activeTab === 'REPORTS') return <AdminReports />;

@@ -25,6 +25,7 @@ public class AdminController {
     private final NgoRepository ngoRepository;
     private final UserRepository userRepository;
     private final DonationRepository donationRepository;
+    private final com.kindora.kindora.repository.DonationProofRepository donationProofRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboardStats() {
@@ -184,5 +185,42 @@ public class AdminController {
     @GetMapping("/donations")
     public ResponseEntity<List<com.kindora.kindora.entity.Donation>> getAllDonations() {
         return ResponseEntity.ok(donationRepository.findAll());
+    }
+
+    @GetMapping("/proofs")
+    public ResponseEntity<List<com.kindora.kindora.entity.DonationProof>> getAllProofs() {
+        return ResponseEntity.ok(donationProofRepository.findAll());
+    }
+
+    @GetMapping("/proof/{id}")
+    public ResponseEntity<com.kindora.kindora.entity.DonationProof> getProof(@PathVariable String id) {
+        return donationProofRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/proof/{id}/approve")
+    public ResponseEntity<?> approveProof(@PathVariable String id) {
+        return donationProofRepository.findById(id).map(proof -> {
+            proof.setStatus(com.kindora.kindora.entity.ProofStatus.APPROVED);
+            proof.setApprovedByAdmin("Admin");
+            donationProofRepository.save(proof);
+            
+            // Also update donation status to COMPLETED
+            donationRepository.findById(proof.getDonationId()).ifPresent(d -> {
+                d.setStatus(DonationStatus.COMPLETED);
+                donationRepository.save(d);
+            });
+            
+            return ResponseEntity.ok(Map.of("message", "Proof approved"));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/proof/{id}/reject")
+    public ResponseEntity<?> rejectProof(@PathVariable String id, @RequestBody Map<String, String> payload) {
+        return donationProofRepository.findById(id).map(proof -> {
+            proof.setStatus(com.kindora.kindora.entity.ProofStatus.REJECTED);
+            proof.setRemarks(payload.get("reason"));
+            donationProofRepository.save(proof);
+            return ResponseEntity.ok(Map.of("message", "Proof rejected"));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

@@ -5,5 +5,9 @@ public enum DonationStatus {
     ACCEPTED,
     SCHEDULED,
     PICKED_UP,
-    COMPLETED
+    IN_TRANSIT,
+    DELIVERED_TO_NGO,
+    DISTRIBUTION_PROOF_PENDING,
+    COMPLETED,
+    CANCELLED
 }

@@ -19,6 +19,7 @@ public class Donation {
     @Id
     private String id;
     private String donorId;
+    private String donorName;
     private String ngoId;
     private String category;
     private String description;
@@ -27,4 +28,14 @@ public class Donation {
     private LocalDate pickupDate;
     private DonationStatus status;
     private LocalDateTime createdAt;
+    
+    private Double pickupLatitude;
+    private Double pickupLongitude;
+    
+    private String pickupFullAddress;
+    private String pickupCity;
+    private String pickupDistrict;
+    private String pickupState;
+    private String pickupCountry;
+    private String pickupPincode;
 }

@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import api, { ngoService } from '../services/api';
 import { navState } from '../utils/navigation';
+import LocationSelector from '../components/common/LocationSelector';
+import MapLocation from '../components/common/MapLocation';
 
 export default function Register() {
     const [role, setRole] = useState('DONOR');
@@ -19,15 +21,17 @@ export default function Register() {
     
     // Donor State
     const [donorData, setDonorData] = useState({
-        name: '', email: '', password: '', confirmPassword: '', phone: '', address: ''
+        name: '', email: '', password: '', confirmPassword: '', phone: '', address: '', 
+        fullAddress: '', city: '', district: '', state: '', country: '', pincode: '',
+        latitude: null, longitude: null
     });
 
     // NGO State
     const [ngoData, setNgoData] = useState({
         organizationName: '', registrationNumber: '', registrationType: 'Society',
-        registrationDate: '', address: '', city: '', state: '', pincode: '',
+        registrationDate: '', address: '', fullAddress: '', city: '', district: '', state: '', country: '', pincode: '',
         authorizedPersonName: '', email: '', mobileNumber: '', password: '', confirmPassword: '',
-        registrationCertificate: '', panCard: '', addressProof: '', idProof: ''
+        registrationCertificate: '', panCard: '', addressProof: '', idProof: '', latitude: null, longitude: null
     });
 
     const handleDonorChange = (e) => setDonorData({ ...donorData, [e.target.name]: e.target.value });
@@ -52,6 +56,10 @@ export default function Register() {
             alert('Password must be at least 6 characters long!');
             return;
         }
+        if (!donorData.address || !donorData.latitude) {
+            alert('Please select a valid location from the map.');
+            return;
+        }
 
         try {
             const { confirmPassword, ...submitData } = donorData;
@@ -73,6 +81,10 @@ export default function Register() {
         }
         if (ngoData.password.length < 6) {
             alert('Password must be at least 6 characters long!');
+            return;
+        }
+        if (!ngoData.address || !ngoData.latitude) {
+            alert('Please select a valid location from the map.');
             return;
         }
 
@@ -129,7 +141,36 @@ export default function Register() {
                             </div>
                         </div>
                         <input type="text" name="phone" placeholder="Phone Number" onChange={handleDonorChange} className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none" required />
-                        <input type="text" name="address" placeholder="Address" onChange={handleDonorChange} className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none" required />
+                        
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Your Location</label>
+                            <LocationSelector 
+                                onLocationSelect={(loc) => setDonorData(prev => ({ 
+                                    ...prev, 
+                                    address: loc.address, 
+                                    fullAddress: loc.fullAddress,
+                                    city: loc.city,
+                                    district: loc.district,
+                                    state: loc.state,
+                                    country: loc.country,
+                                    pincode: loc.pincode,
+                                    latitude: loc.lat, 
+                                    longitude: loc.lng 
+                                }))} 
+                            />
+                            {donorData.address && (
+                                <div className="mt-4">
+                                    <MapLocation 
+                                        latitude={donorData.latitude}
+                                        longitude={donorData.longitude}
+                                        address={donorData.address}
+                                        title="Selected Address"
+                                        showMap={false}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        
                         <button type="submit" className="w-full bg-secondary text-white py-4 rounded-xl hover:bg-primary transition-colors font-bold mt-4">Register as Donor</button>
                     </form>
                 ) : (
@@ -152,11 +193,38 @@ export default function Register() {
                         {/* Location Details */}
                         <div>
                             <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Location Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" name="address" placeholder="Street Address" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
-                                <input type="text" name="city" placeholder="City" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
-                                <input type="text" name="state" placeholder="State" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
-                                <input type="text" name="pincode" placeholder="Pincode" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input type="text" name="city" value={ngoData.city} placeholder="City" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
+                                <input type="text" name="state" value={ngoData.state} placeholder="State" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
+                                <input type="text" name="pincode" value={ngoData.pincode} placeholder="Pincode" onChange={handleNgoChange} className="w-full p-3 border border-gray-200 rounded-xl outline-none" required />
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">NGO Location</label>
+                                <LocationSelector 
+                                    onLocationSelect={(loc) => setNgoData(prev => ({ 
+                                        ...prev, 
+                                        address: loc.address, 
+                                        fullAddress: loc.fullAddress,
+                                        city: loc.city || prev.city,
+                                        district: loc.district,
+                                        state: loc.state || prev.state,
+                                        country: loc.country,
+                                        pincode: loc.pincode || prev.pincode,
+                                        latitude: loc.lat, 
+                                        longitude: loc.lng 
+                                    }))} 
+                                />
+                                {ngoData.address && (
+                                    <div className="mt-4">
+                                        <MapLocation 
+                                            latitude={ngoData.latitude}
+                                            longitude={ngoData.longitude}
+                                            address={ngoData.address}
+                                            title="NGO Registered Location"
+                                            showMap={false}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 

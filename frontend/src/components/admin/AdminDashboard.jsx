@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FaGift, FaUsers, FaBuilding, FaCheckCircle, FaDownload } from 'react-icons/fa';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ setActiveTab }) {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -36,7 +36,10 @@ export default function AdminDashboard() {
                     <h2 className="text-3xl font-bold text-gray-800">Welcome back, Admin! 👋</h2>
                     <p className="text-gray-500 mt-1">Here's what's happening on Kindora today.</p>
                 </div>
-                <button className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center space-x-2 hover:bg-secondary transition-colors shadow-md">
+                <button 
+                    onClick={() => window.print()}
+                    className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center space-x-2 hover:bg-secondary transition-colors shadow-md"
+                >
                     <FaDownload /> <span>Export Report</span>
                 </button>
             </div>
@@ -186,7 +189,7 @@ export default function AdminDashboard() {
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="bg-white p-6 rounded-[24px] shadow-sm border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-gray-800 text-lg">Recent Donations</h3>
-                        <button className="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">View All</button>
+                        <button onClick={() => setActiveTab && setActiveTab('DONATIONS_MGMT')} className="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-sm font-bold transition-colors">View All Details</button>
                     </div>
                     <div className="space-y-4">
                         {(!stats.recentDonations?.length) ? (

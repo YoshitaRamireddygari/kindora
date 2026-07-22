@@ -2,14 +2,24 @@ import React, { useState } from 'react';
 import { donorService } from '../../services/api';
 import { motion } from 'framer-motion';
 import { FaHandHoldingHeart, FaPlus } from 'react-icons/fa';
+import LocationSelector from '../common/LocationSelector';
+import MapLocation from '../common/MapLocation';
 
 export default function DonateItem({ user, setActiveTab }) {
     const [formData, setFormData] = useState({
         itemName: '',
-        category: 'Select',
+        category: '',
         quantity: '',
-        condition: 'Select',
+        condition: '',
         pickupAddress: '',
+        pickupFullAddress: '',
+        pickupCity: '',
+        pickupDistrict: '',
+        pickupState: '',
+        pickupCountry: '',
+        pickupPincode: '',
+        pickupLatitude: null,
+        pickupLongitude: null,
         description: ''
     });
 
@@ -19,12 +29,31 @@ export default function DonateItem({ user, setActiveTab }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!formData.pickupAddress) {
+            alert('Please select a pickup location on the map.');
+            return;
+        }
+        
+        if (!formData.images || formData.images.length === 0) {
+            alert('Please upload at least one image of the item.');
+            return;
+        }
+
         try {
             await donorService.createDonation({
                 description: `${formData.itemName} (${formData.quantity}) - ${formData.condition}: ${formData.description}`,
                 category: formData.category,
                 quantity: formData.quantity,
                 pickupAddress: formData.pickupAddress,
+                pickupFullAddress: formData.pickupFullAddress,
+                pickupCity: formData.pickupCity,
+                pickupDistrict: formData.pickupDistrict,
+                pickupState: formData.pickupState,
+                pickupCountry: formData.pickupCountry,
+                pickupPincode: formData.pickupPincode,
+                pickupLatitude: formData.pickupLatitude,
+                pickupLongitude: formData.pickupLongitude,
                 donorId: user.id
             });
             alert('Donation submitted successfully!');
@@ -59,10 +88,10 @@ export default function DonateItem({ user, setActiveTab }) {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
                                 <select 
-                                    name="category" value={formData.category} onChange={handleChange}
+                                    name="category" value={formData.category} onChange={handleChange} required
                                     className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none bg-white"
                                 >
-                                    <option value="Select">Select</option>
+                                    <option value="" disabled>Select</option>
                                     <option value="Food">Food</option>
                                     <option value="Clothes">Clothes</option>
                                     <option value="Books">Books</option>
@@ -81,10 +110,10 @@ export default function DonateItem({ user, setActiveTab }) {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Condition</label>
                                 <select 
-                                    name="condition" value={formData.condition} onChange={handleChange}
+                                    name="condition" value={formData.condition} onChange={handleChange} required
                                     className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none bg-white"
                                 >
-                                    <option value="Select">Select</option>
+                                    <option value="" disabled>Select</option>
                                     <option value="New">New</option>
                                     <option value="Good">Good</option>
                                     <option value="Fair">Fair</option>
@@ -92,20 +121,40 @@ export default function DonateItem({ user, setActiveTab }) {
                             </div>
                         </div>
 
-                        <div>
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Pickup Location</label>
-                            <input 
-                                type="text" name="pickupAddress" placeholder="Enter location"
-                                value={formData.pickupAddress} onChange={handleChange} required
-                                className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
+                            <LocationSelector 
+                                onLocationSelect={(loc) => setFormData(prev => ({ 
+                                    ...prev, 
+                                    pickupAddress: loc.address,
+                                    pickupFullAddress: loc.fullAddress,
+                                    pickupCity: loc.city,
+                                    pickupDistrict: loc.district,
+                                    pickupState: loc.state,
+                                    pickupCountry: loc.country,
+                                    pickupPincode: loc.pincode, 
+                                    pickupLatitude: loc.lat, 
+                                    pickupLongitude: loc.lng 
+                                }))} 
                             />
+                            {formData.pickupAddress && (
+                                <div className="mt-4">
+                                    <MapLocation 
+                                        latitude={formData.pickupLatitude}
+                                        longitude={formData.pickupLongitude}
+                                        address={formData.pickupAddress}
+                                        title="Selected Pickup Location"
+                                        showMap={false}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
                             <input 
                                 type="text" name="description" placeholder="Good quality, well maintained and clean items."
-                                value={formData.description} onChange={handleChange}
+                                value={formData.description} onChange={handleChange} required
                                 className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
                             />
                         </div>

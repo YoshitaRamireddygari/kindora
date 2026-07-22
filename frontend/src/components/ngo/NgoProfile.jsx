@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaHandHoldingHeart } from 'react-icons/fa';
+import MapLocation from '../common/MapLocation';
 
-export default function NgoProfile({ user }) {
+export default function NgoProfile({ user, setActiveTab }) {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col max-w-6xl mx-auto">
             {/* Split layout */}
@@ -64,9 +65,21 @@ export default function NgoProfile({ user }) {
                         </div>
                     </div>
                     
-                    <button className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-secondary transition-colors mt-8">
+                    <button 
+                        onClick={() => setActiveTab && setActiveTab('NGO_SETTINGS')}
+                        className="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-secondary transition-colors mt-8 mb-8"
+                    >
                         Edit Profile
                     </button>
+                    
+                    <h3 className="text-xl font-bold text-gray-800 mb-6 border-b border-gray-100 pb-4">Registered Location</h3>
+                    <MapLocation 
+                        latitude={user?.latitude}
+                        longitude={user?.longitude}
+                        address={user?.address || 'Hyderabad, Telangana, India'}
+                        title="NGO Base Location"
+                        height="200px"
+                    />
                 </div>
             </div>
         </motion.div>
