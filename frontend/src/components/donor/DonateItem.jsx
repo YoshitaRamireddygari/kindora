@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { donorService } from '../../services/api';
+import React, { useState, useEffect } from 'react';
+import { donorService, categoryService } from '../../services/api';
 import { motion } from 'framer-motion';
 import { FaHandHoldingHeart, FaPlus } from 'react-icons/fa';
 import LocationSelector from '../common/LocationSelector';
@@ -20,8 +20,23 @@ export default function DonateItem({ user, setActiveTab }) {
         pickupPincode: '',
         pickupLatitude: null,
         pickupLongitude: null,
+        pickupLongitude: null,
         description: ''
     });
+    
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await categoryService.getAll();
+                setCategories(res.data);
+            } catch (error) {
+                console.error("Failed to fetch categories", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -92,11 +107,9 @@ export default function DonateItem({ user, setActiveTab }) {
                                     className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none bg-white"
                                 >
                                     <option value="" disabled>Select</option>
-                                    <option value="Food">Food</option>
-                                    <option value="Clothes">Clothes</option>
-                                    <option value="Books">Books</option>
-                                    <option value="Toys">Toys</option>
-                                    <option value="Other">Other</option>
+                                    {categories.map(c => (
+                                        <option key={c.id} value={c.name}>{c.name}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div>

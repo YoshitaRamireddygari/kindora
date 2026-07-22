@@ -55,4 +55,10 @@ export const adminService = {
     rejectProof: (id, reason) => api.put(`/admin/proof/${id}/reject`, { reason }),
 };
 
+export const categoryService = {
+    getAll: () => api.get('/categories'),
+    create: (data) => api.post('/categories', data),
+    delete: (id) => api.delete(`/categories/${id}`)
+};
+
 export default api;

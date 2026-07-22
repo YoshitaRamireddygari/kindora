@@ -1,15 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaList, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaList, FaPlus, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
+import { categoryService } from '../../services/api';
 
 export default function AdminCategories() {
-    const categories = [
-        { id: 1, name: 'Food', count: 45, status: 'Active' },
-        { id: 2, name: 'Clothes', count: 120, status: 'Active' },
-        { id: 3, name: 'Books', count: 85, status: 'Active' },
-        { id: 4, name: 'Toys', count: 30, status: 'Active' },
-        { id: 5, name: 'Others', count: 15, status: 'Active' },
-    ];
+    const [categories, setCategories] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const res = await categoryService.getAll();
+            setCategories(res.data);
+        } catch (error) {
+            console.error("Failed to fetch categories", error);
+        }
+    };
+
+    const handleAddCategory = async (e) => {
+        e.preventDefault();
+        if (!newCategoryName.trim()) return;
+        
+        try {
+            await categoryService.create({ name: newCategoryName });
+            setNewCategoryName('');
+            setShowModal(false);
+            fetchCategories(); // Refresh list
+        } catch (error) {
+            console.error("Failed to add category", error);
+            alert("Failed to add category.");
+        }
+    };
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col max-w-5xl mx-auto">
@@ -18,7 +43,10 @@ export default function AdminCategories() {
                     <h2 className="text-3xl font-bold text-gray-800">Categories</h2>
                     <p className="text-gray-500 mt-1">Manage donation categories and types.</p>
                 </div>
-                <button className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-secondary transition-colors shadow-md">
+                <button 
+                    onClick={() => setShowModal(true)}
+                    className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-secondary transition-colors shadow-md"
+                >
                     <FaPlus /> Add Category
                 </button>
             </div>
@@ -57,6 +85,53 @@ export default function AdminCategories() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Add Category Modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-xl"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-bold text-gray-800">Add New Category</h3>
+                            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <FaTimes size={24} />
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleAddCategory}>
+                            <div className="mb-6">
+                                <label className="block text-sm font-bold text-gray-800 mb-2">Category Name</label>
+                                <input 
+                                    type="text" 
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    placeholder="e.g. Blankets"
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-700 font-medium"
+                                    required
+                                />
+                            </div>
+                            <div className="flex gap-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowModal(false)}
+                                    className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="flex-1 py-3 rounded-xl font-bold text-white bg-primary hover:bg-secondary transition-colors"
+                                >
+                                    Add Category
+                                </button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            )}
         </motion.div>
     );
 }
