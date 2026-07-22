@@ -2,6 +2,7 @@ package com.kindora.kindora.controller;
 
 import com.kindora.kindora.entity.Category;
 import com.kindora.kindora.repository.CategoryRepository;
+import com.kindora.kindora.repository.DonationRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryRepository categoryRepository;
+    private final DonationRepository donationRepository;
 
     @PostConstruct
     public void initDefaultCategories() {
@@ -33,7 +35,17 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<Category>> getAllCategories() {
-        return ResponseEntity.ok(categoryRepository.findAll());
+        List<Category> categories = categoryRepository.findAll();
+        List<com.kindora.kindora.entity.Donation> allDonations = donationRepository.findAll();
+        
+        for (Category cat : categories) {
+            long count = allDonations.stream()
+                .filter(d -> cat.getName().equalsIgnoreCase(d.getCategory()))
+                .count();
+            cat.setCount(count);
+        }
+        
+        return ResponseEntity.ok(categories);
     }
 
     @PostMapping

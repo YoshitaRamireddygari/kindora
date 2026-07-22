@@ -6,6 +6,8 @@ import com.kindora.kindora.entity.Donation;
 import com.kindora.kindora.entity.DonationStatus;
 import com.kindora.kindora.repository.NgoRepository;
 import com.kindora.kindora.repository.DonationRepository;
+import com.kindora.kindora.repository.SystemSettingsRepository;
+import com.kindora.kindora.entity.SystemSettings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +27,15 @@ public class NgoController {
     private final NgoRepository ngoRepository;
     private final DonationRepository donationRepository;
     private final com.kindora.kindora.repository.DonationProofRepository donationProofRepository;
+    private final SystemSettingsRepository systemSettingsRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<NGO> register(@Valid @RequestBody NGO ngo) {
+    public ResponseEntity<?> register(@Valid @RequestBody NGO ngo) {
+        List<SystemSettings> settings = systemSettingsRepository.findAll();
+        if (!settings.isEmpty() && !settings.get(0).isAllowNgoRegistrations()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "THE NGO REGISTARATIONS has to be allowed or else regrations were not opened"));
+        }
+
         ngo.setStatus(NgoStatus.PENDING);
         ngo.setCreatedAt(LocalDateTime.now());
         return ResponseEntity.ok(ngoRepository.save(ngo));

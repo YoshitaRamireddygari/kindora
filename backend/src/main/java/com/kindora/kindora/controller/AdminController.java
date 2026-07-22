@@ -223,4 +223,40 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("message", "Proof rejected"));
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/reports")
+    public ResponseEntity<List<Map<String, Object>>> getReportsData() {
+        List<com.kindora.kindora.entity.Donation> allDonations = donationRepository.findAll();
+        
+        // Initialize 12 months with 0
+        String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        java.util.Map<String, Map<String, Object>> monthsData = new java.util.LinkedHashMap<>();
+        
+        for (String m : monthNames) {
+            Map<String, Object> initMap = new java.util.HashMap<>();
+            initMap.put("name", m);
+            initMap.put("donations", 0);
+            initMap.put("requests", 0);
+            monthsData.put(m, initMap);
+        }
+
+        java.time.format.DateTimeFormatter monthFormatter = java.time.format.DateTimeFormatter.ofPattern("MMM");
+
+        for (com.kindora.kindora.entity.Donation d : allDonations) {
+            if (d.getCreatedAt() != null) {
+                String month = d.getCreatedAt().format(monthFormatter);
+                if (monthsData.containsKey(month)) {
+                    Map<String, Object> data = monthsData.get(month);
+                    data.put("donations", (int) data.get("donations") + 1);
+                    
+                    // Request fulfillment (assigned to NGO)
+                    if (d.getNgoId() != null && !d.getNgoId().isEmpty()) {
+                        data.put("requests", (int) data.get("requests") + 1);
+                    }
+                }
+            }
+        }
+
+        return ResponseEntity.ok(new java.util.ArrayList<>(monthsData.values()));
+    }
 }

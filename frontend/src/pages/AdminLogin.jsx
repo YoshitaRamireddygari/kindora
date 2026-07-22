@@ -25,7 +25,8 @@ export default function AdminLogin() {
             const adminUser = {
                 name: 'Yoshita (Admin)',
                 email: email,
-                role: 'ADMIN'
+                role: 'ADMIN',
+                createdAt: '2026-07-21T21:54:45+05:30'
             };
             localStorage.setItem('token', 'mock_admin_token');
             localStorage.setItem('user', JSON.stringify(adminUser));

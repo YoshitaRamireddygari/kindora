@@ -53,12 +53,18 @@ export const adminService = {
     getProof: (id) => api.get(`/admin/proof/${id}`),
     approveProof: (id) => api.put(`/admin/proof/${id}/approve`),
     rejectProof: (id, reason) => api.put(`/admin/proof/${id}/reject`, { reason }),
+    getReports: () => api.get('/admin/reports'),
 };
 
 export const categoryService = {
     getAll: () => api.get('/categories'),
     create: (data) => api.post('/categories', data),
     delete: (id) => api.delete(`/categories/${id}`)
+};
+
+export const settingsService = {
+    getSettings: () => api.get('/settings'),
+    updateSettings: (data) => api.put('/settings', data)
 };
 
 export default api;

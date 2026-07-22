@@ -1,18 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaChartBar, FaDownload } from 'react-icons/fa';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { adminService } from '../../services/api';
 
 export default function AdminReports() {
-    const data = [
-        { name: 'Jan', donations: 400, requests: 240 },
-        { name: 'Feb', donations: 300, requests: 139 },
-        { name: 'Mar', donations: 200, requests: 980 },
-        { name: 'Apr', donations: 278, requests: 390 },
-        { name: 'May', donations: 189, requests: 480 },
-        { name: 'Jun', donations: 239, requests: 380 },
-        { name: 'Jul', donations: 349, requests: 430 },
-    ];
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+        const fetchReports = async () => {
+            try {
+                const res = await adminService.getReports();
+                setData(res.data);
+            } catch (error) {
+                console.error("Failed to fetch reports", error);
+            }
+        };
+        fetchReports();
+    }, []);
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col max-w-7xl mx-auto">
